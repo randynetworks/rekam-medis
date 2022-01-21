@@ -1,12 +1,13 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Obat_masuk extends CI_Controller {
+class Obat_masuk extends CI_Controller
+{
 
 	public function __construct()
 	{
 		parent::__construct();
-			if(!$this->session->userdata('username')){
+		if (!$this->session->userdata('username')) {
 			redirect(base_url("auth"));
 		}
 		$this->load->model('Pasien_model');
@@ -16,6 +17,7 @@ class Obat_masuk extends CI_Controller {
 		$this->load->model('Obat_model');
 		$this->load->model('m_id');
 		$this->load->library('form_validation');
+		$this->load->library('Pdf'); // MEMANGGIL LIBRARY YANG KITA BUAT TADI
 	}
 
 
@@ -23,36 +25,38 @@ class Obat_masuk extends CI_Controller {
 	{
 		$judul['judul'] = 'Halaman Obat Masuk';
 		$data['obat'] = $this->db->query("SELECT * FROM obat_masuk JOIN petugas_obat ON obat_masuk.id_petugas_obat = petugas_obat.id  ORDER BY kd_masuk DESC")->result();
-		$data['petugas_obat'] = $this->db->get_where('petugas_obat',['username' => $this->session->userdata('username')])->row_array();
-		
+		$data['petugas_obat'] = $this->db->get_where('petugas_obat', ['username' => $this->session->userdata('username')])->row_array();
+
 		$this->load->view('templates/home_header', $judul);
 		$this->load->view('templates/home_sidebar');
 		$this->load->view('templates/topbar_apoteker', $data);
 		$this->load->view('obat_masuk/index', $data);
-		$this->load->view('templates/home_footer' );
+		$this->load->view('templates/home_footer');
 	}
 
-		public function tambah(){
+	public function tambah()
+	{
 
-			$judul['judul'] = 'Halaman Tambah Transaksi';
-			$data['kodemasuk'] = $this->m_id->buat_kode_masuk();
-			$kodemasuk = $this->m_id->buat_kode_masuk();
-			$data['obat'] = $this->db->query("SELECT * FROM obat ORDER BY nama_obat ASC")->result();
-			$data['masuk'] = $this->db->query("SELECT * FROM detail_masuk JOIN obat ON detail_masuk.kd_obat =obat.id_obat WHERE kd_masuk ='$kodemasuk'")->result();
-			$data['subtotal'] = $this->Resep_model->hitung('detail_masuk', ['kd_masuk' => $this->m_id->buat_kode_masuk()]);
-			$data['petugas_obat'] = $this->db->get_where('petugas_obat',['username' => $this->session->userdata('username')])->row_array();
+		$judul['judul'] = 'Halaman Tambah Transaksi';
+		$data['kodemasuk'] = $this->m_id->buat_kode_masuk();
+		$kodemasuk = $this->m_id->buat_kode_masuk();
+		$data['obat'] = $this->db->query("SELECT * FROM obat ORDER BY nama_obat ASC")->result();
+		$data['masuk'] = $this->db->query("SELECT * FROM detail_masuk JOIN obat ON detail_masuk.kd_obat =obat.id_obat WHERE kd_masuk ='$kodemasuk'")->result();
+		$data['subtotal'] = $this->Resep_model->hitung('detail_masuk', ['kd_masuk' => $this->m_id->buat_kode_masuk()]);
+		$data['petugas_obat'] = $this->db->get_where('petugas_obat', ['username' => $this->session->userdata('username')])->row_array();
 
 
-			$this->load->view('templates/home_header', $judul);
-			$this->load->view('templates/home_sidebar');
-			$this->load->view('templates/topbar_apoteker', $data);
-			$this->load->view('obat_masuk/input', $data);
-			$this->load->view('templates/home_footer' );
-		}
+		$this->load->view('templates/home_header', $judul);
+		$this->load->view('templates/home_sidebar');
+		$this->load->view('templates/topbar_apoteker', $data);
+		$this->load->view('obat_masuk/input', $data);
+		$this->load->view('templates/home_footer');
+	}
 
-	
 
-	function tambah_aksi(){
+
+	function tambah_aksi()
+	{
 		$username = $this->session->userdata('username');
 		$kd_obat = $this->input->post('kd_obat');
 		$kodemasuk = $this->input->post('kd_masuk');
@@ -77,8 +81,7 @@ class Obat_masuk extends CI_Controller {
 			if ($cek > 0) {
 				$this->db->query("UPDATE detail_masuk set stok_in='$stok_in2', stok_tot='$stok_tot2', total='$total2' WHERE kd_masuk='$kd_masuk' AND kd_obat='$kd_obat'");
 				redirect('Obat_masuk/tambah');
-			}else
-			{
+			} else {
 				$data = array(
 					'kd_masuk'  => $kd_masuk,
 					'kd_obat'  => $kd_obat,
@@ -90,9 +93,7 @@ class Obat_masuk extends CI_Controller {
 				$this->Resep_model->save($data, 'detail_masuk');
 				redirect('Obat_masuk/tambah');
 			}
-
-		} elseif ($simpan) 
-		{
+		} elseif ($simpan) {
 			$data = array(
 				'kd_masuk' => $kd_masuk,
 				'tanggal' => $tanggal,
@@ -111,14 +112,14 @@ class Obat_masuk extends CI_Controller {
 
 
 
-	
+
 	public function hapus($kd_masuk)
 	{
 		$this->Resep_model->hapus_data_masuk($kd_masuk);
 		redirect('obat_masuk/index');
 	}
 
-	
+
 	public function cek_obat()
 	{
 		$kd_obat = $this->input->post('kd_obat');
@@ -131,7 +132,7 @@ class Obat_masuk extends CI_Controller {
 		echo json_encode($data);
 	}
 
-	
+
 
 	function hapus_detail_masuk($kodemasuk)
 	{
@@ -144,95 +145,131 @@ class Obat_masuk extends CI_Controller {
 
 	/*LAPORAN TRANSAKSI*/
 
-	function laporan(){
+	function laporan()
+	{
 
-		if(isset($_GET['filter']) && ! empty($_GET['filter'])){ 
+		if (isset($_GET['filter']) && !empty($_GET['filter'])) {
 
-			$filter = $_GET['filter'];     
+			$filter = $_GET['filter'];
 
-			if($filter == '1'){               
-				$tanggal1 = $_GET['tanggal'];  
-				$tanggal2 = $_GET['tanggal2'];                               
-				$ket = 'Data Obat Masuk dari Tanggal '.date('d-m-y', strtotime($tanggal1)).' - '.date('d-m-y', strtotime($tanggal2));                
-				$url_cetak = 'obat_masuk/cetak1?tanggal1='.$tanggal1.'&tanggal2='.$tanggal2.'';                
-				$obat_masuk = $this->Apoteker_model->view_by_date1($tanggal1,$tanggal2);             
+			if ($filter == '1') {
+				$tanggal1 = $_GET['tanggal'];
+				$tanggal2 = $_GET['tanggal2'];
+				$ket = 'Data Obat Masuk dari Tanggal ' . date('d-m-y', strtotime($tanggal1)) . ' - ' . date('d-m-y', strtotime($tanggal2));
+				$url_cetak = 'obat_masuk/cetak1?tanggal1=' . $tanggal1 . '&tanggal2=' . $tanggal2 . '';
+				$obat_masuk = $this->Apoteker_model->view_by_date1($tanggal1, $tanggal2);
+			} else if ($filter == '2') {
+				$kd_masuk = $_GET['kd_masuk'];
+				$ket = 'Data Obat Masuk ';
+				$url_cetak = 'obat_masuk/cetak2?&kd_masuk=' . $kd_masuk;
+				$obat_masuk = $this->Apoteker_model->view_by_kd_masuk1($kd_masuk);
 			}
+		} else {
 
-			else if($filter == '2'){                
-			$kd_masuk = $_GET['kd_masuk'];                                              
-			$ket = 'Data Obat Masuk ';                
-			$url_cetak = 'obat_masuk/cetak2?&kd_masuk='.$kd_masuk;                
-			$obat_masuk = $this->Apoteker_model->view_by_kd_masuk1($kd_masuk);             
-			}   
+			$ket = 'Semua Data Obat Masuk';
+			$url_cetak = 'obat_masuk/cetak';
+			$obat_masuk = $this->Apoteker_model->view_all();
 		}
 
-		else{ 
+		$data['ket'] = $ket;
+		$data['url_cetak'] = base_url($url_cetak);
+		$data['obat_masuk'] = $obat_masuk;
+		$data['kd_masuk'] = $this->Apoteker_model->kd_masuk();
+		$data['judul'] = 'Laporan Data Obat Masuk';
+		$data['admin'] = $this->db->get_where('admin', ['username' => $this->session->userdata('username')])->row_array();
 
-			$ket = 'Semua Data Obat Masuk';            
-			$url_cetak = 'obat_masuk/cetak';            
-			$obat_masuk = $this->Apoteker_model->view_all(); 
+		$this->load->view('templates/home_header', $data);
+		$this->load->view('templates/home_sidebar', $data);
+		$this->load->view('templates/topbar', $data);
+		$this->load->view('obat_masuk/laporan', $data);
+		$this->load->view('templates/home_footer');
+	}
 
+	public function pdfExport($ket, $alamat, $obat_masuk)
+	{
+		$pdf = new FPDF("P", "cm", "Legal");
+
+		$pdf->SetMargins(2, 1, 1);
+		$pdf->AliasNbPages();
+		$pdf->AddPage();
+		$pdf->SetFont('Times', '', 12);
+		// $pdf->Image('assets/img/aplikasi/logo.png',2.5,0.5,3,2.5);
+		$pdf->SetX(8);
+		$pdf->MultiCell(9, 0.6, "DOKTER PRAKTIK PERORANGAN", 0, 'C');
+		$pdf->SetFont('Times', 'B', 14);
+		$pdf->SetX(8);
+		$pdf->MultiCell(9, 0.6, "DOKTER CECEP ISMAWAN", 0, 'C');
+		$pdf->SetFont('Times', '', 12);
+		$pdf->SetX(8);
+		$pdf->MultiCell(9, 0.6, '' . $alamat . '', 0, 'C');
+		$pdf->Line(2, 3.1, 31, 3.1);
+		$pdf->SetLineWidth(0.1);
+		$pdf->Line(2, 3.2, 31, 3.2);
+		$pdf->SetLineWidth(0);
+		$pdf->ln(1);
+		$pdf->SetFont('Arial', 'B', 11);
+		$pdf->MultiCell(18, 0.7, "DATA TRANSAKSI OBAT MASUK", 0, 'C');
+		$pdf->SetFont('Arial', '', 10);
+		$pdf->MultiCell(18, 0.7, '' . $ket . '', 0, 'C');
+		$pdf->SetFont('Arial', '', 10);
+		$pdf->Cell(5, 0.6, "Di cetak pada : " . date("d/m/Y"), 0, 0, 'C');
+		$pdf->ln(1);
+
+		$pdf->SetFont('Arial', 'B', 10);
+		$pdf->Cell(1, 0.8, 'NO', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'TANGGAL', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'KODE TRANSAKSI', 1, 0, 'C');
+		$pdf->Cell(5, 0.8, 'NAMA', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'TOTAL BAYAR', 1, 0, 'C');
+		$pdf->ln();
+
+		if (!empty($obat_masuk)) {
+			$no = 1;
+			foreach ($obat_masuk as $data) {
+				$pdf->SetFont('Arial', '', 10);
+				$pdf->Cell(1, 0.6, $no++, 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, date('d-m-Y', strtotime($data->tanggal)), 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, $data->kd_masuk, 1, 0, 'C');
+				$pdf->Cell(5, 0.6, $data->nama, 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, 'Rp. ' . number_format($data->subtotal, 0, ',', '.'), 1, 0, 'L');
+
+				$pdf->ln();
+			}
 		}
 
-		 	$data['ket'] = $ket;    
-		 	$data['url_cetak'] = base_url($url_cetak);    
-		 	$data['obat_masuk'] = $obat_masuk;       
-		 	$data['kd_masuk'] = $this->Apoteker_model->kd_masuk();  
-		 	$data['judul'] = 'Laporan Data Obat Masuk';
-			$data['admin'] = $this->db->get_where('admin',['username' => $this->session->userdata('username')])->row_array();
-							
-			$this->load->view('templates/home_header', $data);
-			$this->load->view('templates/home_sidebar', $data);
-			$this->load->view('templates/topbar', $data);
-			$this->load->view('obat_masuk/laporan', $data);
-			$this->load->view('templates/home_footer');
-		
-	}     
+		$pdf->Output("Laporan Transaksi Obat Masuk.pdf", "I");
+	}
 
-	public function cetak(){    
-                             
+	public function cetak()
+	{
+
 		$ket = 'Semua Data Obat Masuk';
 		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
 
-	  	ob_start();   
-	  	require('assets/pdf/fpdf.php');  
-	  	$data['obat_masuk'] = $this->Apoteker_model->view_all(); 
-	  	$data['ket'] = $ket;  
-	  	$data['alamat'] = $alamat;
-	  	$this->load->view('obat_masuk/preview', $data);    
-	  	
+		$obat_masuk = $this->Apoteker_model->view_all();
+		$this->pdfExport($ket, $alamat, $obat_masuk);
 	}
 
-	public function cetak1(){    
+	public function cetak1()
+	{
 
-	  	$tanggal1 = $_GET['tanggal1'];  
-		$tanggal2 = $_GET['tanggal2'];                               
-		$ket = 'Data Obat Masuk dari Tanggal '.date('d-m-y', strtotime($tanggal1)).' s/d '.date('d-m-y', strtotime($tanggal2));
+		$tanggal1 = $_GET['tanggal1'];
+		$tanggal2 = $_GET['tanggal2'];
+		$ket = 'Data Obat Masuk dari Tanggal ' . date('d-m-y', strtotime($tanggal1)) . ' s/d ' . date('d-m-y', strtotime($tanggal2));
 		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
 
-	  	ob_start();   
-	  	require('assets/pdf/fpdf.php');  
-	  	$data['obat_masuk'] = $this->Apoteker_model->view_by_date1($tanggal1,$tanggal2);  
-	  	$data['ket'] = $ket; 
-	  	$data['alamat'] = $alamat; 
-	  	$this->load->view('obat_masuk/preview', $data);    
-	  	
+		$obat_masuk = $this->Apoteker_model->view_by_date1($tanggal1, $tanggal2);
+		$this->pdfExport($ket, $alamat, $obat_masuk);
 	}
 
-	public function cetak2(){    
+	public function cetak2()
+	{
 
-	  	$kd_masuk = $_GET['kd_masuk'];                                             
-		$ket = 'Kode Transaksi Obat Masuk   '   .$kd_masuk  ;
-		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';                           
-	  	ob_start();   
-	  	require('assets/pdf/fpdf.php');  
-	  	$data['obat_masuk'] = $this->Apoteker_model->view_by_kd_masuk($kd_masuk); 
-	  	$data['ket'] = $ket; 
-	  	$data['alamat'] = $alamat; 
-	  	$this->load->view('obat_masuk/preview1', $data);    
-	  	
+		$kd_masuk = $_GET['kd_masuk'];
+		$ket = 'Kode Transaksi Obat Masuk   '   . $kd_masuk;
+		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
+		$obat_masuk = $this->Apoteker_model->view_by_kd_masuk($kd_masuk);
+		
+		$this->pdfExport($ket, $alamat, $obat_masuk);
 	}
-
-
-
 }

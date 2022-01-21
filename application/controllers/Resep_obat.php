@@ -222,12 +222,8 @@ class Resep_obat extends CI_Controller
 		$this->load->view('templates/home_footer');
 	}
 
-	public function cetak()
+	public function pdfExport($ket, $alamat, $resep_obat)
 	{
-
-		$ket = 'Semua Data Resep Obat';
-		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
-		$resep_obat = $this->Resep_model->view_all();
 		$pdf = new FPDF("L", "cm", "Legal");
 
 		$pdf->SetMargins(2, 1, 1);
@@ -285,6 +281,15 @@ class Resep_obat extends CI_Controller
 		$pdf->Output("Laporan Semua Resep Obat.pdf", "I");
 	}
 
+	public function cetak()
+	{
+
+		$ket = 'Semua Data Resep Obat';
+		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
+		$resep_obat = $this->Resep_model->view_all();
+		$this->pdfExport($ket, $alamat, $resep_obat);
+	}
+
 	public function cetak1()
 	{
 
@@ -295,10 +300,9 @@ class Resep_obat extends CI_Controller
 
 		ob_start();
 		require('assets/pdf/fpdf.php');
-		$data['resep_obat'] = $this->Resep_model->view_by_date($tanggal1, $tanggal2);
-		$data['ket'] = $ket;
-		$data['alamat'] = $alamat;
-		$this->load->view('resep_obat/preview', $data);
+		$resep_obat = $this->Resep_model->view_by_date($tanggal1, $tanggal2);
+		
+		$this->pdfExport($ket, $alamat, $resep_obat);
 	}
 
 	public function cetak2()
@@ -307,12 +311,9 @@ class Resep_obat extends CI_Controller
 		$kd_rm = $_GET['kd_rm'];
 		$ket = 'Kode RM   '   . $kd_rm;
 		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
-		ob_start();
-		require('assets/pdf/fpdf.php');
-		$data['resep_obat'] = $this->Resep_model->view_by_kd_rm($kd_rm);
 		$data['resep'] = $this->db->query("SELECT * FROM pasien  where kd_rm = '$kd_rm'")->result();
-		$data['ket'] = $ket;
-		$data['alamat'] = $alamat;
-		$this->load->view('resep_obat/preview1', $data);
+		$resep_obat = $this->Resep_model->view_by_kd_rm($kd_rm);
+		
+		$this->pdfExport($ket, $alamat, $resep_obat);
 	}
 }

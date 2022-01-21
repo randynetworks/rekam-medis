@@ -1,12 +1,13 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Pembayaran extends CI_Controller {
+class Pembayaran extends CI_Controller
+{
 
 	public function __construct()
 	{
 		parent::__construct();
-		if(!$this->session->userdata('username')){
+		if (!$this->session->userdata('username')) {
 			redirect(base_url("auth"));
 		}
 
@@ -18,18 +19,19 @@ class Pembayaran extends CI_Controller {
 		$this->load->model('m_id');
 		$this->load->library('form_validation');
 		$this->load->helper('url');
+		$this->load->library('Pdf'); // MEMANGGIL LIBRARY YANG KITA BUAT TADI
 	}
 
 
 	public function index()
 	{
 		$judul['judul'] = 'Halaman Pembayaran';
-		$data['admin'] = $this->db->get_where('admin',['username' => $this->session->userdata('username')])->row_array();
+		$data['admin'] = $this->db->get_where('admin', ['username' => $this->session->userdata('username')])->row_array();
 		$data['kodebayar'] = $this->m_id->buat_kode_bayar();
 		$data['bayar'] = $this->Pembayaran_model->getAllBayar();
 
-		
-	
+
+
 		$this->load->view('templates/home_header', $judul);
 		$this->load->view('templates/home_sidebar', $data);
 		$this->load->view('templates/topbar', $data);
@@ -37,7 +39,7 @@ class Pembayaran extends CI_Controller {
 		$this->load->view('templates/home_footer');
 	}
 
-		public function tambah($kd_resep)
+	public function tambah($kd_resep)
 	{
 
 		$judul['judul'] = 'Halaman Tambah Data Pembayaran';
@@ -50,21 +52,20 @@ class Pembayaran extends CI_Controller {
 		$data['pemeriksaan'] = $this->Pembayaran_model->getBayar($where);
 		$data['bayar'] = $this->db->query("SELECT * FROM detail_bayar JOIN tarif on detail_bayar.id_tarif = tarif.id_tarif WHERE kd_bayar='$kodebayar'")->result();
 		$subtotal = $this->Resep_model->hitungjumlahbayar('detail_bayar', ['kd_bayar' => $this->m_id->buat_kode_bayar()]);
-		$data['subtotal'] = $this->Resep_model->hitungjumlahbayar('detail_bayar', ['kd_bayar' => $this->m_id->buat_kode_bayar()]); 
+		$data['subtotal'] = $this->Resep_model->hitungjumlahbayar('detail_bayar', ['kd_bayar' => $this->m_id->buat_kode_bayar()]);
 		$cek = $this->db->query("SELECT subtotal FROM resep WHERE kd_resep='$kd_resep'")->row_array();
 		$data['totalbayar'] = floatval($subtotal) + $cek['subtotal'];
-		 $data['data']=$this->Pembayaran_model->get_all_produk();
-		$data['admin'] = $this->db->get_where('admin',['username' => $this->session->userdata('username')])->row_array();
+		$data['data'] = $this->Pembayaran_model->get_all_produk();
+		$data['admin'] = $this->db->get_where('admin', ['username' => $this->session->userdata('username')])->row_array();
 
 		$this->load->view('templates/home_header', $judul);
 		$this->load->view('templates/home_sidebar', $data);
 		$this->load->view('templates/topbar', $data);
 		$this->load->view('pembayaran/input', $data);
 		$this->load->view('templates/home_footer');
-		
-		}
+	}
 
-		function tambah_aksi()
+	function tambah_aksi()
 	{
 		$username = $this->session->userdata('username');
 		$kd_resep = $this->input->post('kd_resep');
@@ -85,29 +86,29 @@ class Pembayaran extends CI_Controller {
 		$totalbayar = floatval($subtotal) + $cek['subtotal'];
 
 
-		if ($tambah) {	
-			
+		if ($tambah) {
+
 			$data = array(
-			
-			'kd_bayar' => $kd_bayar,
-			'id_tarif' => $id_tarif,
-			'total'  => $total
-		); 
-		
-		$this->Pembayaran_model->input_data1($data, 'detail_bayar');
-		redirect('pembayaran/tambah/'.$kd_resep,'');
-		}elseif($save){
+
+				'kd_bayar' => $kd_bayar,
+				'id_tarif' => $id_tarif,
+				'total'  => $total
+			);
+
+			$this->Pembayaran_model->input_data1($data, 'detail_bayar');
+			redirect('pembayaran/tambah/' . $kd_resep, '');
+		} elseif ($save) {
 			$data = array(
-			'kd_resep' => $kd_resep,
-			'kd_bayar' => $kd_bayar,
-			'id_pemeriksaan' => $id_periksa,
-			'totalbayar' => $totalbayar,
-			'tanggal_bayar' => $tanggal_bayar,
-			'id_admin' => $id_admin['id_admin']
-		); 
-		
-		$this->Pembayaran_model->input_data($data, 'pembayaran');
-		redirect('pembayaran/lihat/'.$kd_resep,'');
+				'kd_resep' => $kd_resep,
+				'kd_bayar' => $kd_bayar,
+				'id_pemeriksaan' => $id_periksa,
+				'totalbayar' => $totalbayar,
+				'tanggal_bayar' => $tanggal_bayar,
+				'id_admin' => $id_admin['id_admin']
+			);
+
+			$this->Pembayaran_model->input_data($data, 'pembayaran');
+			redirect('pembayaran/lihat/' . $kd_resep, '');
 		}
 	}
 
@@ -124,15 +125,14 @@ class Pembayaran extends CI_Controller {
 		$data['kd_bayar'] =  $this->db->query("SELECT kd_bayar FROM pembayaran where kd_resep = '$kd_resep'")->result();
 		$data['pemeriksaan'] = $this->Pembayaran_model->getBayar($where);
 		$data['bayar'] = $this->db->query("SELECT * FROM detail_bayar JOIN tarif on detail_bayar.id_tarif = tarif.id_tarif WHERE kd_bayar='$kodebayar'")->result();
-		$data['admin'] = $this->db->get_where('admin',['username' => $this->session->userdata('username')])->row_array();
+		$data['admin'] = $this->db->get_where('admin', ['username' => $this->session->userdata('username')])->row_array();
 
 		$this->load->view('templates/home_header', $judul);
 		$this->load->view('templates/home_sidebar', $data);
 		$this->load->view('templates/topbar', $data);
 		$this->load->view('pembayaran/lihat', $data);
 		$this->load->view('templates/home_footer');
-		
-		}
+	}
 
 	function hapus_detail_bayar($kodebayar)
 	{
@@ -150,12 +150,12 @@ class Pembayaran extends CI_Controller {
 
 
 
-		
 
-	
-	
 
-	
+
+
+
+
 	public function periksa($kd_rm)
 	{
 
@@ -163,21 +163,19 @@ class Pembayaran extends CI_Controller {
 		$data['desc'] = 'Informasi Pasien';
 		$data['kodeperiksa'] = $this->m_id->buat_kode_periksa();
 		$data['tanggal'] = date("d-m-Y");
-		$data['dokter'] = $this->db->get_where('dokter',['username' => $this->session->userdata('username')])->row_array();
+		$data['dokter'] = $this->db->get_where('dokter', ['username' => $this->session->userdata('username')])->row_array();
 		$where1 = array('kd_rm' => $kd_rm);
 		$data1['pasien'] = $this->Pemeriksaan_model->tampil_detail($where1)->result();
 		$data2['pemeriksaan'] = $this->Pemeriksaan_model->tampil_pemeriksaan($where1)->result();
-		$data['dokter'] = $this->db->get_where('dokter',['username' => $this->session->userdata('username')])->row_array();
-		
+		$data['dokter'] = $this->db->get_where('dokter', ['username' => $this->session->userdata('username')])->row_array();
+
 		$this->load->view('templates/home_header', $judul);
-		$this->load->view('templates/home_sidebar',$data);
+		$this->load->view('templates/home_sidebar', $data);
 		$this->load->view('templates/home_topbar', $data);
 		$this->load->view('pemeriksaan/detail', $data1);
 		$this->load->view('pemeriksaan/input', $data2);
 		$this->load->view('templates/home_footer');
-		
-		
-}
+	}
 
 
 	public function cek_tarif()
@@ -202,28 +200,27 @@ class Pembayaran extends CI_Controller {
 		echo json_encode($data);
 	}
 
-	
-/*LAPORAN TRANSAKSI*/
 
-	function laporan(){
+	/*LAPORAN TRANSAKSI*/
 
-		if(isset($_GET['filter']) && ! empty($_GET['filter'])){ 
+	function laporan()
+	{
 
-			$filter = $_GET['filter'];     
+		if (isset($_GET['filter']) && !empty($_GET['filter'])) {
 
-			if($filter == '1'){               
-				$tanggal1 = $_GET['tanggal'];  
-				$tanggal2 = $_GET['tanggal2'];                               
-				$ket = 'Data Pembayaran dari Tanggal '.date('d-m-y', strtotime($tanggal1)).' - '.date('d-m-y', strtotime($tanggal2));                
-				$url_cetak = 'pembayaran/cetak1?tanggal1='.$tanggal1.'&tanggal2='.$tanggal2.'';                
-				$pembayaran = $this->Pembayaran_model->view_by_date($tanggal1,$tanggal2);             
-			}
+			$filter = $_GET['filter'];
 
-			else if($filter == '2'){                
-			$kd_rm = $_GET['kd_rm'];                                              
-			$ket = 'Data Pembayaran ';                
-			$url_cetak = 'pembayaran/cetak2?&kd_rm='.$kd_rm;                
-			$pembayaran = $this->Pembayaran_model->view_by_kd_rm($kd_rm);             
+			if ($filter == '1') {
+				$tanggal1 = $_GET['tanggal'];
+				$tanggal2 = $_GET['tanggal2'];
+				$ket = 'Data Pembayaran dari Tanggal ' . date('d-m-y', strtotime($tanggal1)) . ' - ' . date('d-m-y', strtotime($tanggal2));
+				$url_cetak = 'pembayaran/cetak1?tanggal1=' . $tanggal1 . '&tanggal2=' . $tanggal2 . '';
+				$pembayaran = $this->Pembayaran_model->view_by_date($tanggal1, $tanggal2);
+			} else if ($filter == '2') {
+				$kd_rm = $_GET['kd_rm'];
+				$ket = 'Data Pembayaran ';
+				$url_cetak = 'pembayaran/cetak2?&kd_rm=' . $kd_rm;
+				$pembayaran = $this->Pembayaran_model->view_by_kd_rm($kd_rm);
 			}
 
 			// else if($filter == '3'){                
@@ -233,126 +230,171 @@ class Pembayaran extends CI_Controller {
 			// $pasien = $this->Pemeriksaan_model->view_by_kd_pasien($pasien)->result();             
 			// }
 
-		   
 
+
+		} else {
+
+			$ket = 'Semua Data Pembayaran';
+			$url_cetak = 'pembayaran/cetak';
+			$pembayaran = $this->Pembayaran_model->view_all();
 		}
 
-		else{ 
+		$data['ket'] = $ket;
+		$data['url_cetak'] = base_url($url_cetak);
+		$data['pembayaran'] = $pembayaran;
+		$data['kd_rm'] = $this->Pemeriksaan_model->kd_rm();
+		$data['judul'] = 'Laporan Data Pembayaran';
+		$data['admin'] = $this->db->get_where('admin', ['username' => $this->session->userdata('username')])->row_array();
 
-			$ket = 'Semua Data Pembayaran';            
-			$url_cetak = 'pembayaran/cetak';            
-			$pembayaran = $this->Pembayaran_model->view_all(); 
+		$this->load->view('templates/home_header', $data);
+		$this->load->view('templates/home_sidebar', $data);
+		$this->load->view('templates/topbar', $data);
+		$this->load->view('pembayaran/laporan', $data);
+		$this->load->view('templates/home_footer');
+	}
 
+	public function pdfExport($ket, $alamat, $pembayaran)
+	{
+		$pdf = new FPDF("L", "cm", "Legal");
+
+		$pdf->SetMargins(2, 1, 1);
+		$pdf->AliasNbPages();
+		$pdf->AddPage();
+		$pdf->SetFont('Times', '', 12);
+		// $pdf->Image('assets/img/aplikasi/logo.png',2.5,0.5,3,2.5);
+		$pdf->SetX(8);
+		$pdf->MultiCell(19.5, 0.7, "DOKTER PRAKTIK PERORANGAN", 0, 'C');
+		$pdf->SetFont('Times', 'B', 14);
+		$pdf->SetX(8);
+		$pdf->MultiCell(19.5, 0.7, "DOKTER CECEP ISMAWAN", 0, 'C');
+		$pdf->SetFont('Times', '', 12);
+		$pdf->SetX(8);
+		$pdf->MultiCell(19.5, 0.7, '' . $alamat . '', 0, 'C');
+		$pdf->Line(2, 3.1, 31, 3.1);
+		$pdf->SetLineWidth(0.1);
+		$pdf->Line(2, 3.2, 31, 3.2);
+		$pdf->SetLineWidth(0);
+		$pdf->ln(1);
+		$pdf->SetFont('Arial', 'B', 11);
+		$pdf->MultiCell(31, 0.7, "DATA PEMBAYARAN", 0, 'C');
+		$pdf->SetFont('Arial', '', 10);
+		$pdf->MultiCell(31, 0.7, '' . $ket . '', 0, 'C');
+		$pdf->SetFont('Arial', '', 10);
+		$pdf->Cell(5, 0.6, "Di cetak pada : " . date("d/m/Y"), 0, 0, 'C');
+		$pdf->ln(1);
+
+		$pdf->SetFont('Arial', 'B', 10);
+		$pdf->Cell(1, 0.8, 'NO', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'TANGGAL', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'KODE BAYAR', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'KODE RM', 1, 0, 'C');
+		$pdf->Cell(3.5, 0.8, 'KODE PERIKSA', 1, 0, 'C');
+		$pdf->Cell(10, 0.8, 'TINDAKAN', 1, 0, 'C');
+		$pdf->Cell(3, 0.8, 'TOTAL BAYAR', 1, 0, 'C');
+		$pdf->ln();
+
+		if (!empty($pembayaran)) {
+			$no = 1;
+			foreach ($pembayaran as $data) {
+				$pdf->SetFont('Arial', '', 10);
+				$pdf->Cell(1, 0.6, $no++, 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, date('d-m-Y', strtotime($data->tanggal_bayar)), 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, $data->kd_bayar, 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, $data->kd_rm, 1, 0, 'C');
+				$pdf->Cell(3.5, 0.6, $data->id_pemeriksaan, 1, 0, 'C');
+				$pdf->Cell(10, 0.6, $data->tindakan, 1, 0, 'L');
+				$pdf->Cell(3, 0.6,  'Rp. ' . number_format($data->totalbayar, 0, ',', '.'), 1, 0, 'C');
+				$pdf->ln();
+			}
 		}
 
-		 	$data['ket'] = $ket;    
-		 	$data['url_cetak'] = base_url($url_cetak);    
-		 	$data['pembayaran'] = $pembayaran;       
-		 	 	$data['kd_rm'] = $this->Pemeriksaan_model->kd_rm();   
-		 	$data['judul'] = 'Laporan Data Pembayaran';
-			$data['admin'] = $this->db->get_where('admin',['username' => $this->session->userdata('username')])->row_array();
-							
-			$this->load->view('templates/home_header', $data);
-			$this->load->view('templates/home_sidebar', $data);
-			$this->load->view('templates/topbar', $data);
-			$this->load->view('pembayaran/laporan', $data);
-			$this->load->view('templates/home_footer');
-		
-	}     
+		$pdf->Output("Laporan pembayaran.pdf", "I");
+	}
 
-	public function cetak(){    
-                             
+	public function cetak()
+	{
+
 		$ket = 'Semua Data Pembayaran';
 		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
-
-	  	ob_start();   
-	  	require('assets/pdf/fpdf.php');  
-	  	$data['pembayaran'] = $this->Pembayaran_model->view_all(); 
-	  	$data['ket'] = $ket;  
-	  	$data['alamat'] = $alamat;
-	  	$this->load->view('pembayaran/preview', $data);    
-	  	
+		$pembayaran = $this->Pembayaran_model->view_all();
+		$this->pdfExport($ket, $alamat, $pembayaran);
 	}
 
-	public function cetak1(){    
+	public function cetak1()
+	{
 
-	  	$tanggal1 = $_GET['tanggal1'];  
-		$tanggal2 = $_GET['tanggal2'];                               
-		$ket = 'Data Pembayaran dari Tanggal '.date('d-m-y', strtotime($tanggal1)).' s/d '.date('d-m-y', strtotime($tanggal2));
+		$tanggal1 = $_GET['tanggal1'];
+		$tanggal2 = $_GET['tanggal2'];
+		$ket = 'Data Pembayaran dari Tanggal ' . date('d-m-y', strtotime($tanggal1)) . ' s/d ' . date('d-m-y', strtotime($tanggal2));
 		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
 
-	  	ob_start();   
-	  	require('assets/pdf/fpdf.php');  
-	  	$data['pembayaran'] = $this->Pembayaran_model->view_by_date($tanggal1,$tanggal2);  
-	  	$data['ket'] = $ket;  
-	  	$data['alamat'] = $alamat;
-	  	$this->load->view('pembayaran/preview', $data);    
-	  	
+		$pembayaran = $this->Pembayaran_model->view_by_date($tanggal1, $tanggal2);
+		$this->pdfExport($ket, $alamat, $pembayaran);
 	}
 
-	public function cetak2(){    
+	public function cetak2()
+	{
 
-	  	$kd_rm = $_GET['kd_rm'];                                              
-		$ket = 'Kode RM   '   .$kd_rm  ; 
-		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';                          
-	  	ob_start();   
-	  	require('assets/pdf/fpdf.php');  
-	  	$data['pembayaran'] = $this->Pembayaran_model->view_by_kd_rm($kd_rm);
-	  	 $data['kd_rm'] = $this->db->query("SELECT * FROM pasien  where kd_rm = '$kd_rm'")->result();
-	  	$data['ket'] = $ket; 
-	  	$data['alamat'] = $alamat;
-	  	$this->load->view('pembayaran/preview', $data);    
-	  	
+		$kd_rm = $_GET['kd_rm'];
+		$ket = 'Kode RM   '   . $kd_rm;
+		$alamat = 'Kp. Cibereum No.18 RT/RW 04/01 Tanjungjaya';
+		ob_start();
+		require('assets/pdf/fpdf.php');
+		$data['pembayaran'] = $this->Pembayaran_model->view_by_kd_rm($kd_rm);
+		$data['kd_rm'] = $this->db->query("SELECT * FROM pasien  where kd_rm = '$kd_rm'")->result();
+		$data['ket'] = $ket;
+		$data['alamat'] = $alamat;
+		$this->load->view('pembayaran/preview', $data);
 	}
 
 
 
-	function add_to_cart(){ //fungsi Add To Cart
-        $data = array(
-            'id_tarif' => $this->input->post('id_tarif'), 
-            'nama_tarif' => $this->input->post('nama_tarif'), 
-            'harga' => $this->input->post('harga'), 
-        );
-        $this->pembayaran->insert($data);
-        echo $this->show_cart(); //tampilkan cart setelah added
-    }
- 
-    function show_cart(){ //Fungsi untuk menampilkan Cart
-        $output = '';
-        $no = 0;
-        foreach ($this->pembayaran->contents() as $items) {
-            $no++;
-            $output .='
+	function add_to_cart()
+	{ //fungsi Add To Cart
+		$data = array(
+			'id_tarif' => $this->input->post('id_tarif'),
+			'nama_tarif' => $this->input->post('nama_tarif'),
+			'harga' => $this->input->post('harga'),
+		);
+		$this->pembayaran->insert($data);
+		echo $this->show_cart(); //tampilkan cart setelah added
+	}
+
+	function show_cart()
+	{ //Fungsi untuk menampilkan Cart
+		$output = '';
+		$no = 0;
+		foreach ($this->pembayaran->contents() as $items) {
+			$no++;
+			$output .= '
                 <tr>
-                    <td>'.$items['nama_tarif'].'</td>
-                    <td>'.number_format($items['harga']).'</td>
-                    <td>'.number_format($items['subtotal']).'</td>
-                    <td><button type="button" id_tarif="'.$items['rowid'].'" class="hapus_cart btn btn-danger btn-xs">Batal</button></td>
+                    <td>' . $items['nama_tarif'] . '</td>
+                    <td>' . number_format($items['harga']) . '</td>
+                    <td>' . number_format($items['subtotal']) . '</td>
+                    <td><button type="button" id_tarif="' . $items['rowid'] . '" class="hapus_cart btn btn-danger btn-xs">Batal</button></td>
                 </tr>
             ';
-        }
-        $output .= '
+		}
+		$output .= '
             <tr>
                 <th colspan="3">Total</th>
-                <th colspan="2">'.'Rp '.number_format($this->pembayaran->total()).'</th>
+                <th colspan="2">' . 'Rp ' . number_format($this->pembayaran->total()) . '</th>
             </tr>
         ';
-        return $output;
-    }
- 
-    function load_cart(){ //load data cart
-        echo $this->show_cart();
-    }
- 
-    function hapus_cart(){ //fungsi untuk menghapus item cart
-        $data = array(
-            'rowid' => $this->input->post('row_id'), 
-        );
-        $this->car->update($data);
-        echo $this->show_cart();
-    }
-		
+		return $output;
+	}
 
-	
+	function load_cart()
+	{ //load data cart
+		echo $this->show_cart();
+	}
 
+	function hapus_cart()
+	{ //fungsi untuk menghapus item cart
+		$data = array(
+			'rowid' => $this->input->post('row_id'),
+		);
+		$this->car->update($data);
+		echo $this->show_cart();
+	}
 }
